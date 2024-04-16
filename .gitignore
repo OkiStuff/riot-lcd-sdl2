@@ -1,1 +1,3 @@
 reference_lcd.h
+reference_lcd.c
+compile_flags.txt

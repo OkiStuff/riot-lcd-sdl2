@@ -97,7 +97,7 @@ void riot_lcd_sdl2_flush(lcd_t* dev);
 #endif
 
 #ifdef RIOT_LCD_SDL2_IMPLEMENTATION
-	// ...
+	#include "riot_lcd_sdl2.c"
 #endif
 
 #endif // RIOT_LCD_SDL2_H

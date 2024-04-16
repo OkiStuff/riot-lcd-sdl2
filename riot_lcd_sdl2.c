@@ -47,7 +47,12 @@ int lcd_init(lcd_t* dev, const lcd_params_t* params)
 	return 0;
 }
 
-void uint16_to_rgb565_bigendian(uint16_t color, uint8_t* r, uint8_t* g, uint8_t* b)
+#ifdef RIOT_LCD_SDL2_IMPLEMENTATION
+	// Add a prefix to function name incase it's being included in header as to make function name less common and prevent name conflicts
+	#define uint16_to_rgb565_bigendian riot_lcd_sdl2__uint16_to_rgb565_bigendian
+#endif
+
+static void uint16_to_rgb565_bigendian(uint16_t color, uint8_t* r, uint8_t* g, uint8_t* b)
 {
 	*r = (color >> 8) & 0xF8; // (bits 8-12)
 	*g = ((color << 5) & 0xE0) | ((color >> 13) & 0x1C); // (bits 3-7 and 13-15)
@@ -106,3 +111,9 @@ void riot_lcd_sdl2_destroy(lcd_t* dev)
 	SDL_DestroyWindow(dev->window);
 	SDL_Quit();
 }
+
+// Undefine any defined macros if it's being included via header
+#ifdef RIOT_LCD_SDL2_IMPLEMENTATION
+	#undef ABS
+	#undef uint16_to_rgb565_bigendian
+#endif

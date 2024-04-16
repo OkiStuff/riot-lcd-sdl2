@@ -116,4 +116,6 @@ void riot_lcd_sdl2_destroy(lcd_t* dev)
 #ifdef RIOT_LCD_SDL2_IMPLEMENTATION
 	#undef ABS
 	#undef uint16_to_rgb565_bigendian
+	#undef PRINT_ERR
+	#undef PRINT_ERR_FORMAT
 #endif

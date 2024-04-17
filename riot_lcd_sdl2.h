@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 #ifndef RIOT_LCD_SDL2_EXCLUDE_HELPER_MACROS
-	#define RGB565_BE(R, G, B) (((R & 0xF8) << 8) | ((G & 0xFC) << 3) | (B >> 3))
+	#define RGB565_LE(R,G,B) (uint16_t)(((R) >> 3) | (((G) & 0xFC) << 3) | (((B) >> 3) << 8)))
 #endif
 
 #ifndef RIOT_LCD_SDL2_RECTANGLES_MAX
@@ -25,10 +25,19 @@ struct riot_lcd_sdl2_rect
 	uint8_t blue;
 };
 
+typedef struct riot_lcd_sdl2_background_color
+{
+	uint8_t r;
+	uint8_t g;
+	uint8_t b;
+	uint8_t a;
+} riot_lcd_sdl2_background_color;
+
 typedef struct lcd_t
 {
-	// Set the following to null / 0
 	struct riot_lcd_sdl2_rect rectangles[RIOT_LCD_SDL2_RECTANGLES_MAX];
+	riot_lcd_sdl2_background_color bkg_color;
+	SDL_bool inverted;
 	SDL_Window* window;
 	SDL_Renderer* renderer;
 	size_t rect_index;
@@ -43,6 +52,7 @@ typedef struct lcd_params_t
 	const int width;
 	const int height;
 	const float fps_cap; // Set to 0 for default (25.f)
+	const riot_lcd_sdl2_background_color bkg_color;
 } lcd_params_t;
 
 /**
@@ -88,9 +98,123 @@ void lcd_fill(lcd_t* dev, uint16_t x1, uint16_t x2, uint16_t y1, uint16_t y2, ui
  */
 void lcd_pixmap(lcd_t* dev, uint16_t x1, uint16_t x2, uint16_t y1, uint16_t y2, const uint16_t* color);
 
+/**
+ * @brief   Invert the display colors
+ *
+ * @param[in]   dev     device descriptor
+ */
+void lcd_invert_on(lcd_t *dev);
+
+/**
+ * @brief   Disable color inversion
+ *
+ * @param[in]   dev     device descriptor
+ */
+void lcd_invert_off(lcd_t *dev);
+
 void riot_lcd_sdl2_destroy(lcd_t* dev);
 void riot_lcd_sdl2_present(lcd_t* dev);
 void riot_lcd_sdl2_flush(lcd_t* dev);
+
+// Dummy functions, are not actually implemented.
+
+/**
+ * @name    Low-level LCD API
+ *
+ * Low-level functions are used to acquire a device, write commands with data
+ * to the device, or read data from the device and release it when it is no
+ * longer needed. They are usually called by the high-level functions such
+ * as @ref lcd_init, @ref lcd_fill, @ref lcd_pixmap, etc., but can also be
+ * used by the application to implement low-level operations if needed.
+ *
+ * @{
+ */
+/**
+ * @brief   Low-level function to acquire the device
+ *
+ * @param[out]  dev     device descriptor
+ */
+void lcd_ll_acquire(lcd_t *dev);
+
+/**
+ * @brief   Low-level function to release the device
+ *
+ * @param[out]  dev     device descriptor
+ */
+void lcd_ll_release(lcd_t *dev);
+
+/**
+ * @brief   Low-level function to write a command
+ *
+ * @pre The device must have already been acquired with @ref lcd_ll_acquire
+ *      before this function can be called.
+ *
+ * @param[in]   dev     device descriptor
+ * @param[in]   cmd     command code
+ * @param[in]   data    command data to the device or NULL for commands without data
+ * @param[in]   len     length of the command data or 0 for commands without data
+ */
+void lcd_ll_write_cmd(lcd_t *dev, uint8_t cmd, const uint8_t *data,
+                      size_t len);
+
+/**
+ * @brief   Low-level function for read command
+ *
+ * @note Very often the SPI MISO signal of the serial interface or the RDX
+ *       signal of the MCU 8080 parallel interface are not connected to the
+ *       display. In this case the read command does not provide valid data.
+ *
+ * @pre The device must have already been acquired with @ref lcd_ll_acquire
+ *      before this function can be called.
+ * @pre len > 0
+ *
+ * @param[in]   dev     device descriptor
+ * @param[in]   cmd     command
+ * @param[out]  data    data from the device
+ * @param[in]   len     length of the returned data
+ */
+void lcd_ll_read_cmd(lcd_t *dev, uint8_t cmd, uint8_t *data, size_t len);
+
+/**
+ * @brief   Set the LCD work area
+ *
+ * @param[in] dev  Pointer to the selected driver
+ * @param[in] x1   x coordinate of the first corner
+ * @param[in] x2   x coordinate of the opposite corner
+ * @param[in] y1   y coordinate of the first corner
+ * @param[in] y2   y coordinate of the opposite corner
+ *
+ */
+void lcd_ll_set_area(lcd_t *dev, uint16_t x1, uint16_t x2, uint16_t y1, uint16_t y2);
+/** @} */
+
+
+/**
+ * @brief   Raw write command
+ *
+ * @param[in]   dev     device descriptor
+ * @param[in]   cmd     command code
+ * @param[in]   data    command data to the device or NULL for commands without data
+ * @param[in]   len     length of the command data or 0 for commands without data
+ */
+void lcd_write_cmd(lcd_t *dev, uint8_t cmd, const uint8_t *data,
+                   size_t len);
+
+/**
+ * @brief   Raw read command
+ *
+ * @note Very often the SPI MISO signal of the serial interface or the RDX
+ *       signal of the MCU 8080 parallel interface are not connected to the
+ *       display. In this case the read command does not provide valid data.
+ *
+ * @pre         len > 0
+ *
+ * @param[in]   dev     device descriptor
+ * @param[in]   cmd     command
+ * @param[out]  data    data from the device
+ * @param[in]   len     length of the returned data
+ */
+void lcd_read_cmd(lcd_t *dev, uint8_t cmd, uint8_t *data, size_t len);
 
 #ifdef __cplusplus
 }

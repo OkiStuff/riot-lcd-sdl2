@@ -179,7 +179,7 @@ void riot_lcd_sdl2_flush(lcd_t* dev)
 
 #endif // RIOT_LCD_SDL2_IGNORE_UNIMPLEMENTED_WARNINGS
 
-DEFINE_DUMMY_FUNCTION(void lcd_ll_acqure(lcd_t* dev));
+DEFINE_DUMMY_FUNCTION(void lcd_ll_acquire(lcd_t* dev));
 DEFINE_DUMMY_FUNCTION(void lcd_ll_release(lcd_t* dev));
 DEFINE_DUMMY_FUNCTION(void lcd_ll_write_cmd (lcd_t* dev, uint8_t cmd, const uint8_t *data, size_t len));
 DEFINE_DUMMY_FUNCTION(void lcd_ll_read_cmd (lcd_t* dev, uint8_t cmd, uint8_t *data, size_t len));
